@@ -72,6 +72,15 @@ function enrichLabels($labels)
         'Freight' => 'https://schema.org/ParcelDelivery',
         'Incoterms' => 'https://schema.org/Text',
         'Customs' => 'https://schema.org/GovernmentOrganization',
+        'PurchaseOrder' => 'https://schema.org/Order',
+        'OrderStatus' => 'https://schema.org/Text',
+        'OrderDate' => 'https://schema.org/DateTime',
+        'OrderNumber' => 'https://schema.org/Text',
+        'BillingAddress' => 'https://schema.org/PostalAddress',
+        'ShippingAddress' => 'https://schema.org/PostalAddress',
+        'OrderItem' => 'https://schema.org/OrderItem',
+        'UnitPrice' => 'https://schema.org/PriceSpecification',
+        'Quantity' => 'https://schema.org/QuantitativeValue',
         // Add more categories as needed
     ];
 

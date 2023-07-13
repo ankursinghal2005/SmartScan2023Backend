@@ -292,7 +292,7 @@ try {
 
     $_SESSION['invoice_data'] = $arrFinalData;
     $msg = "Document Parrsed Successfully";
-    $arrRes = ['status' => 'success','msg' => $msg];
+    $arrRes = ['status' => 'success','data'=>$arrFinalData,'msg' => $msg];
     echo json_encode($arrRes);
     exit();
 

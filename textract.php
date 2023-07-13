@@ -1,5 +1,5 @@
 <?php
-
+session_start();
 require 'vendor/autoload.php'; // Make sure to include the AWS SDK for PHP
 
 use Aws\Textract\TextractClient;
@@ -290,8 +290,9 @@ try {
     $arrFinalData['invoice_control'] = $objSmartScan->getExpenseRecord($result);
     $arrFinalData['invoice_details'] = $objSmartScan->getLineItemDetails($result);
 
+    $_SESSION['invoice_data'] = $arrFinalData;
     $msg = "Document Parrsed Successfully";
-    $arrRes = ['status' => 'success', 'data' => $arrFinalData, 'msg' => $msg];
+    $arrRes = ['status' => 'success','msg' => $msg];
     echo json_encode($arrRes);
     exit();
 

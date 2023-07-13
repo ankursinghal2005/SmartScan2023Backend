@@ -10,14 +10,15 @@ include_once('mapping.php');
 
 // Amazon S3 API credentials 
 
-class smartScan{
+class smartScan
+{
 
 
-    private $region = 'us-east-1'; 
-    private$version = 'latest'; 
-    private$access_key_id = 'AKIA3PDZHMKUZV4IALLT'; 
-    private$secret_access_key = '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'; 
-    private $bucket = 'oghackathon23'; 
+    private $region = 'us-east-1';
+    private $version = 'latest';
+    private $access_key_id = 'AKIA3PDZHMKUZV4IALLT';
+    private $secret_access_key = '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';
+    private $bucket = 'oghackathon23';
 
     private $schemaMapping = [];
 
@@ -27,7 +28,8 @@ class smartScan{
 
     private $arrMapping = [];
 
-    function __construct(){
+    function __construct()
+    {
         putenv("AWS_ACCESS_KEY_ID=" . $this->access_key_id);
         putenv("AWS_SECRET_ACCESS_KEY=" . $this->secret_access_key);
 
@@ -35,18 +37,19 @@ class smartScan{
         $credentials = [
             'key' => $this->access_key_id,
             'secret' => $this->secret_access_key,
-            'region' => $this->region, // Replace with your desired region
-            'version' => $this->version, 
+            'region' => $this->region,
+            // Replace with your desired region
+            'version' => $this->version,
         ];
 
         $this->client = new TextractClient($credentials);
 
         $this->comprehendClient = new ComprehendClient([
-                                    'region' => $this->region,
-                                    'version' => $this->version, // Update with the desired version
-                                ]);
+            'region' => $this->region,
+            'version' => $this->version, // Update with the desired version
+        ]);
 
-        $this->schemaMapping();                        
+        $this->schemaMapping();
     }
 
     public function setMapping($arrMapping)
@@ -54,7 +57,8 @@ class smartScan{
         $this->arrMapping = $arrMapping;
     }
 
-    private function schemaMapping(){
+    private function schemaMapping()
+    {
 
         $this->schemaMapping = [
             'Date' => 'https://schema.org/DateTime',
@@ -90,45 +94,47 @@ class smartScan{
             // Add more categories as needed
         ];
     }
-    public function analyzeDocument($doc){
+    public function analyzeDocument($doc)
+    {
         $s3Object = [
             'S3Object' => [
-                            'Bucket' => $this->bucket,
-                            'Name' => $doc
-                            ]
-            ];
+                'Bucket' => $this->bucket,
+                'Name' => $doc
+            ]
+        ];
 
-        $params = ['DocumentLocation' => $s3Object ];
-        $analyzeExpenseParams = [ 'Document' => $s3Object ];
+        $params = ['DocumentLocation' => $s3Object];
+        $analyzeExpenseParams = ['Document' => $s3Object];
         $result = $this->client->analyzeExpense($analyzeExpenseParams);
         return $result;
     }
 
-    public function getExpenseRecord(&$result){
-        
+    public function getExpenseRecord(&$result)
+    {
+
         $arrFinalData = [];
         $arrLebel = [];
-        if(empty($result['ExpenseDocuments']) || empty($result['ExpenseDocuments'][0]) || empty($result['ExpenseDocuments'][0]['SummaryFields']) ){
+        if (empty($result['ExpenseDocuments']) || empty($result['ExpenseDocuments'][0]) || empty($result['ExpenseDocuments'][0]['SummaryFields'])) {
             return $arrFinalData;
         }
-        
-        foreach($result['ExpenseDocuments'][0]['SummaryFields'] AS $summaryFieldKey => $summaryFields){
-           // print_r($summaryFields);
+
+        foreach ($result['ExpenseDocuments'][0]['SummaryFields'] as $summaryFieldKey => $summaryFields) {
+            // print_r($summaryFields);
             $Type = "";
             $LabelDetection = "";
             $ValueDetection = "";
             $GroupProperties = "";
-    
-            if(!empty($summaryFields['Type'])){
-                $LabelDetection = $Type = $summaryFields['Type']['Text']; 
+
+            if (!empty($summaryFields['Type'])) {
+                $LabelDetection = $Type = $summaryFields['Type']['Text'];
             }
-           
-            if(!empty($summaryFields['LabelDetection'])){
-                $LabelDetection = trim($summaryFields['LabelDetection']['Text']); 
+
+            if (!empty($summaryFields['LabelDetection'])) {
+                $LabelDetection = trim($summaryFields['LabelDetection']['Text']);
             }
-    
-            if(!empty($summaryFields['ValueDetection'])){
-                $ValueDetection = $summaryFields['ValueDetection']['Text']; 
+
+            if (!empty($summaryFields['ValueDetection'])) {
+                $ValueDetection = $summaryFields['ValueDetection']['Text'];
             }
 
             $arrTmp = ['Label' => $LabelDetection, 'value' => $ValueDetection];
@@ -141,21 +147,21 @@ class smartScan{
             }
 
 
-            $this->detectEntities($LabelDetection, $arrTmp);
+            //$this->detectEntities($LabelDetection, $arrTmp);
 
-            if(!empty($summaryFields['GroupProperties'][0]['Types'])){
-                $GroupProperties = $summaryFields['GroupProperties'][0]['Types'][0]; 
+            if (!empty($summaryFields['GroupProperties'][0]['Types'])) {
+                $GroupProperties = $summaryFields['GroupProperties'][0]['Types'][0];
                 $arrFinalData[$GroupProperties][$Type] = $arrTmp;
-            }else{
+            } else {
                 $arrFinalData[$Type] = $arrTmp;
             }
         }
 
-        
+
         return $arrFinalData;
     }
 
-    private function detectEntities($label,&$arrTmp)
+    private function detectEntities($label, &$arrTmp)
     {
         try {
             $response = $this->comprehendClient->detectEntities([
@@ -185,7 +191,7 @@ class smartScan{
             }
 
             $arrTmp['enriched_label'] = $enrichedLabel;
-          
+
 
         } catch (AwsException $e) {
             echo 'Error: ' . $e->getAwsErrorMessage() . PHP_EOL;
@@ -193,35 +199,36 @@ class smartScan{
         }
     }
 
-    public function getLineItemDetails(&$result){
+    public function getLineItemDetails(&$result)
+    {
 
         $arrFinalData = [];
-        if(empty($result['ExpenseDocuments']) || empty($result['ExpenseDocuments'][0]) || empty($result['ExpenseDocuments'][0]['LineItemGroups']) ){
+        if (empty($result['ExpenseDocuments']) || empty($result['ExpenseDocuments'][0]) || empty($result['ExpenseDocuments'][0]['LineItemGroups'])) {
             return $arrFinalData;
         }
 
-        foreach($result['ExpenseDocuments'][0]['LineItemGroups'] AS $LineItemGroupsKey => $LineItemGroups){
+        foreach ($result['ExpenseDocuments'][0]['LineItemGroups'] as $LineItemGroupsKey => $LineItemGroups) {
             //print_r($LineItemGroups['LineItems']); die("asd");
-            foreach($LineItemGroups['LineItems'] AS $LineItemkey => $LineItems){
+            foreach ($LineItemGroups['LineItems'] as $LineItemkey => $LineItems) {
                 //print_r($LineItems); die("asd");
                 $arrData = [];
-                foreach($LineItems['LineItemExpenseFields'] AS $key => $LineItem){
+                foreach ($LineItems['LineItemExpenseFields'] as $key => $LineItem) {
                     //print_r($LineItem); die("asd");
                     $Type = "";
                     $LabelDetection = "";
                     $ValueDetection = "";
                     $GroupProperties = "";
-            
-                    if(!empty($LineItem['Type'])){
-                        $LabelDetection = $Type = $LineItem['Type']['Text']; 
+
+                    if (!empty($LineItem['Type'])) {
+                        $LabelDetection = $Type = $LineItem['Type']['Text'];
                     }
-                    
-                    if(!empty($LineItem['LabelDetection'])){
-                        $LabelDetection = trim($LineItem['LabelDetection']['Text']); 
+
+                    if (!empty($LineItem['LabelDetection'])) {
+                        $LabelDetection = trim($LineItem['LabelDetection']['Text']);
                     }
-            
-                    if(!empty($LineItem['ValueDetection'])){
-                        $ValueDetection = $LineItem['ValueDetection']['Text']; 
+
+                    if (!empty($LineItem['ValueDetection'])) {
+                        $ValueDetection = $LineItem['ValueDetection']['Text'];
                     }
 
                     $arrTmp = ['Label' => $LabelDetection, 'value' => $ValueDetection];
@@ -234,10 +241,10 @@ class smartScan{
                     }
 
                     $arrData[] = $arrTmp;
-                    
+
                 }
-             
-                $arrFinalData[$LineItemkey] = $arrData ;
+
+                $arrFinalData[$LineItemkey] = $arrData;
             }
         }
         return $arrFinalData;
@@ -245,21 +252,23 @@ class smartScan{
 
 }
 
-try{
+try {
 
-    
+
     header('Content-Type: application/json; charset=utf-8');
-    $arrRes = ['status' => 'fail','data'=>[]];
-    if(empty($_GET['file_name'])){
-    $arrRes['msg'] = "file_name is missing !";
-    echo json_encode($arrRes); exit();
-    };
-    
-    
+    $arrRes = ['status' => 'fail', 'data' => []];
+    if (empty($_GET['file_name'])) {
+        $arrRes['msg'] = "file_name is missing !";
+        echo json_encode($arrRes);
+        exit();
+    }
+    ;
+
+
     $objSmartScan = new smartScan();
     $result = $objSmartScan->analyzeDocument($_GET['file_name']);
-    $result =  (array) $result;
-    
+    $result = (array) $result;
+
 
     /*
     // for test purpose only
@@ -271,23 +280,26 @@ try{
 
     $objSmartScan->setMapping($arrMapping);
 
-    if(empty($result) || !is_array($result) ){
+    if (empty($result) || !is_array($result)) {
         $arrRes['msg'] = "Un able to parse the document !";
-        echo json_encode($arrRes); exit();
+        echo json_encode($arrRes);
+        exit();
     }
 
     $result = array_shift($result);
     $arrFinalData['invoice_control'] = $objSmartScan->getExpenseRecord($result);
     $arrFinalData['invoice_details'] = $objSmartScan->getLineItemDetails($result);
-    
-    $msg = "Document Parrsed Successfully"; 
-    $arrRes = ['status' => 'success','data'=>$arrFinalData,'msg'=>$msg];
-    echo json_encode($arrRes); exit();
+
+    $msg = "Document Parrsed Successfully";
+    $arrRes = ['status' => 'success', 'data' => $arrFinalData, 'msg' => $msg];
+    echo json_encode($arrRes);
+    exit();
 
 } catch (Exception $e) {
     $msg = $e->getMessage();
-    $arrRes = ['status' => 'fail','data'=>[],'msg'=>$msg];
-    echo json_encode($arrRes); exit();
+    $arrRes = ['status' => 'fail', 'data' => [], 'msg' => $msg];
+    echo json_encode($arrRes);
+    exit();
 }
 
 

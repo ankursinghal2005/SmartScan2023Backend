@@ -20,5 +20,12 @@ $arrMapping = [
     'date:' => 'invoice date',
     'vendor address' => 'address details',
     'shipping & Handling' => 'Freight Delivery Charges'
-];
+
+
+
+
+    
+
+
+]
 ?>

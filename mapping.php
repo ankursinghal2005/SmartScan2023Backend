@@ -2,8 +2,10 @@
 
 $arrMapping = [
     "qty" => 'quantity',
-    "qtyn" => 'quantity',    
+    "qtyn" => 'quantity',
+    'quantity' => 'quantity received',    
     'ship to:' => 'delivery address',
+    'ship to' => 'delivery address',
     'delivery location:' => 'ship to',
     'postal address:' => 'ship to',
     'location:' => 'ship to',
@@ -12,20 +14,25 @@ $arrMapping = [
     'invoice #' => 'invoice number',
     'invoice number:' => 'invoice',
     'invoice no:' => 'invoice',
+    'invoice' => 'invoice number',
     'total' => 'invoice total',
     'total due' => 'invoice total'
     'p.o. number' => 'PO Number',
+    'cust. p. o.' => 'PO Number',
     'name' => 'vendor name',
     'due date' => 'scheduled payment',
+    'final due date' => 'scheduled payment',
     'date:' => 'invoice date',
+    'invoice date' => 'invoice date',
+    'Order\ndate' => 'invoice date',
     'vendor address' => 'address details',
-    'shipping & Handling' => 'Freight Delivery Charges'
-
-
-
-
-    
-
-
+    'Remit to' => 'address details',
+    'shipping & Handling' => 'Freight Delivery Charges',
+    'cust:' => 'customer number',
+    'tax exemption' => 'tax payer id',
+    'amount' => 'detail amount',
+    'description' => 'item description',
+    'T' => 'phone number',
+    'subtotal' => 'detail amount',
 ]
 ?>

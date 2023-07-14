@@ -7,7 +7,7 @@ use Aws\Comprehend\ComprehendClient;
 use Aws\Exception\AwsException;
 
 include_once('mapping.php');
-
+$_SESSION['invoice_data'] = "";
 // Amazon S3 API credentials 
 
 class smartScan
@@ -167,16 +167,19 @@ class smartScan
                 $arrFinalData[$Type] = $arrTmp;
             }
 
-            // set vendor details
-            $arrVendorLebel = ['vendor_number','vendor_name']; 
-            foreach($arrVendorLebel AS $key => $val){
-                if($Type == $val){
-                    $arrFinalData['VENDOR'][$Type] = $arrTmp;
-                }
-            }
 
-            // set country code
-            $arrFinalData['VENDOR']['country_code'] = ["Label" => "country_code","value"=> "US","meta_tag"=>"country_code"];
+            // set vendor details
+            if(!empty($arrFinalData['VENDOR'])){
+                $arrVendorLebel = ['vendor_number','vendor_name']; 
+                foreach($arrVendorLebel AS $key => $val){
+                    if($Type == $val){
+                        $arrFinalData['VENDOR'][$Type] = $arrTmp;
+                    }
+                }
+
+                // set country code
+                $arrFinalData['VENDOR']['country_code'] = ["Label" => "country_code","value"=> "USA","meta_tag"=>"country_code"];
+            }    
         }
 
 
@@ -294,8 +297,9 @@ try {
         echo json_encode($arrRes);
         exit();
     }
-    ;
+    
 
+    
     $objSmartScan = new smartScan();
     $result = $objSmartScan->analyzeDocument($_GET['file_name']);
     $result = (array) $result;
@@ -304,9 +308,10 @@ try {
     /*
     // for test purpose only
     $objSmartScan = new smartScan();
-    $result = file_get_contents('result.json');
+    $result = file_get_contents('success_result.json');
     $result = json_decode($result, true);
     */
+    //print_r(json_encode($result)); die("1");
 
 
     $objSmartScan->setMapping($arrMapping);
@@ -319,9 +324,19 @@ try {
     }
 
     $result = array_shift($result);
-    $arrFinalData['invoice_control'] = $objSmartScan->getExpenseRecord($result);
-    $arrFinalData['invoice_details'] = $objSmartScan->getLineItemDetails($result);
-
+    $expenseRecord = $objSmartScan->getExpenseRecord($result);
+    $lineItemDetails = $objSmartScan->getLineItemDetails($result);
+    
+    if(empty($expenseRecord['VENDOR']) || empty($lineItemDetails)){
+        $msg = "Please use valid Invoice Form !!";
+        $arrRes = ['status' => 'fail', 'data' => [], 'msg' => $msg];
+        echo json_encode($arrRes);
+        exit();
+    }
+    
+    $arrFinalData['invoice_control'] = $expenseRecord;
+    $arrFinalData['invoice_details'] = $lineItemDetails;
+    
     $_SESSION['invoice_data'] = $arrFinalData;
     $msg = "Document Parrsed Successfully";
     $arrRes = ['status' => 'success','data'=>$arrFinalData,'msg' => $msg];

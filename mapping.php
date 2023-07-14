@@ -8,7 +8,7 @@ $arrMapping = [
     'invoice id' => 'invoice_number',
     'invoice#' => 'invoice_number',
     'invoice#:' => 'invoice_number',
-    'invoice #:' => 'invoice number',
+    'invoice #:' => 'invoice_number',
     'invoice number' => 'invoice_number',
     'invoice no:' => 'invoice_number',
     //vendor number

@@ -28,6 +28,8 @@ class smartScan
 
     private $arrMapping = [];
 
+    private $removeKeys = [];
+
     function __construct()
     {
         putenv("AWS_ACCESS_KEY_ID=" . $this->access_key_id);
@@ -57,6 +59,9 @@ class smartScan
         $this->arrMapping = $arrMapping;
     }
 
+    public function setRemoveKeys($removeKeys){
+        $this->removeKeys = $removeKeys;
+    }
     private function schemaMapping()
     {
 
@@ -120,6 +125,12 @@ class smartScan
 
         foreach ($result['ExpenseDocuments'][0]['SummaryFields'] as $summaryFieldKey => $summaryFields) {
             // print_r($summaryFields);
+
+            if (!empty($summaryFields['GroupProperties'][0]['Types'])){
+                if(in_array($summaryFields['GroupProperties'][0]['Types'][0], $this->removeKeys)){
+                    continue;
+                }
+            }
             $Type = "";
             $LabelDetection = "";
             $ValueDetection = "";
@@ -134,16 +145,16 @@ class smartScan
             }
 
             if (!empty($summaryFields['ValueDetection'])) {
-                $ValueDetection = $summaryFields['ValueDetection']['Text'];
+                $ValueDetection = $this->sanatize_string($summaryFields['ValueDetection']['Text']);
             }
-
+            
             $arrTmp = ['Label' => $LabelDetection, 'value' => $ValueDetection];
             $LabelDetection = strtolower($LabelDetection);
             if (!empty($this->arrMapping[$LabelDetection])) {
-                $arrTmp['meta_tag'] = $this->arrMapping[$LabelDetection];
+                $Type = $arrTmp['meta_tag'] = $this->arrMapping[$LabelDetection];
             }
             if (in_array($LabelDetection, $this->arrMapping)) {
-                $arrTmp['meta_tag'] = $LabelDetection;
+                $Type = $arrTmp['meta_tag'] = $LabelDetection;
             }
 
 
@@ -159,6 +170,14 @@ class smartScan
 
 
         return $arrFinalData;
+    }
+
+    private function sanatize_string($str,$search=[],$replace=''){
+        if(empty($str)){
+            return $str;
+        }
+        $str = str_replace(array("\r\n", "\r", "\n"),',',$str);
+        return trim(filter_var($str,FILTER_SANITIZE_STRING));
     }
 
     private function detectEntities($label, &$arrTmp)
@@ -224,7 +243,7 @@ class smartScan
                     }
 
                     if (!empty($LineItem['LabelDetection'])) {
-                        $LabelDetection = trim($LineItem['LabelDetection']['Text']);
+                        $LabelDetection = $LineItem['LabelDetection']['Text'];
                     }
 
                     if (!empty($LineItem['ValueDetection'])) {
@@ -233,6 +252,7 @@ class smartScan
 
                     $arrTmp = ['Label' => $LabelDetection, 'value' => $ValueDetection];
                     $LabelDetection = strtolower($LabelDetection);
+                    $arrTmp['meta_tag'] = $LabelDetection;
                     if (!empty($this->arrMapping[$LabelDetection])) {
                         $arrTmp['meta_tag'] = $this->arrMapping[$LabelDetection];
                     }
@@ -240,7 +260,7 @@ class smartScan
                         $arrTmp['meta_tag'] = $LabelDetection;
                     }
 
-                    $arrData[] = $arrTmp;
+                    $arrData[$arrTmp['meta_tag']] = $arrTmp;
 
                 }
 
@@ -264,11 +284,10 @@ try {
     }
     ;
 
-
     $objSmartScan = new smartScan();
     $result = $objSmartScan->analyzeDocument($_GET['file_name']);
     $result = (array) $result;
-
+    
 
     /*
     // for test purpose only
@@ -279,6 +298,7 @@ try {
 
 
     $objSmartScan->setMapping($arrMapping);
+    $objSmartScan->setRemoveKeys($removeKeys);
 
     if (empty($result) || !is_array($result)) {
         $arrRes['msg'] = "Un able to parse the document !";

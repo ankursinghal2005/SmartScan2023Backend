@@ -192,6 +192,14 @@ class smartScan
         }
         $str = str_replace(array("\r\n", "\r", "\n",),',',$str);
         $str = str_replace(array("$", "#", ), '', $str);
+
+        // replace comma from the number value
+        $a = $str;
+        $b = str_replace(',', '', $a);
+        if (is_numeric($b)) {
+            $str = $b;
+        }
+
         return trim(filter_var($str,FILTER_SANITIZE_STRING));
     }
 

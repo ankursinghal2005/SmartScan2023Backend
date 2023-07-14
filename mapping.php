@@ -12,6 +12,10 @@ $arrMapping = [
     //vendor number
     'customer id' => 'vendor_number',
     'cust:' => 'vendor_number',
+    'vendor#' => 'vendor_number',
+    'vendor number' => 'vendor_number',
+    'vendor no' => 'vendor_number',
+    'vendor id' => 'vendor_number'
     //vendor details
     'name' => 'vendor_name',
     'street' => 'address_details',
@@ -35,6 +39,8 @@ $arrMapping = [
     'p.o. no' => 'po_number',
     'p.o. number' => 'po_number',
     'cust. p.o.' => 'po_number',
+    'po number:' => 'po_number',
+    'po number' => 'po_number',
     //delivery charges
     'shipping' => 'delivery_charges',
     'shipping & handling' => 'delivery_charges',

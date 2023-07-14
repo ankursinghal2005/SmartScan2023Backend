@@ -34,6 +34,7 @@ $arrMapping = [
     'date:' => 'invoice_date',
     'order\ndate' => 'invoice_date',
     'inv date:' => 'invoice_date',
+    'inv date :' => 'invoice_date',
     //scheduled_payment
     'final due date' => 'scheduled_payment',
     'please pay invoice by' => 'scheduled_payment',

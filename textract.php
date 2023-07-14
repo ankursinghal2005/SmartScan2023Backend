@@ -166,6 +166,17 @@ class smartScan
             } else {
                 $arrFinalData[$Type] = $arrTmp;
             }
+
+            // set vendor details
+            $arrVendorLebel = ['vendor_number','vendor_name']; 
+            foreach($arrVendorLebel AS $key => $val){
+                if($Type == $val){
+                    $arrFinalData['VENDOR'][$Type] = $arrTmp;
+                }
+            }
+
+            // set country code
+            $arrFinalData['VENDOR']['country_code'] = ["Label" => "country_code","value"=> "US","meta_tag"=>"country_code"];
         }
 
 
@@ -176,7 +187,8 @@ class smartScan
         if(empty($str)){
             return $str;
         }
-        $str = str_replace(array("\r\n", "\r", "\n"),',',$str);
+        $str = str_replace(array("\r\n", "\r", "\n",),',',$str);
+        $str = str_replace(array("$", "#", ), '', $str);
         return trim(filter_var($str,FILTER_SANITIZE_STRING));
     }
 

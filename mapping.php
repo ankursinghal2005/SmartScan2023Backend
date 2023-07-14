@@ -15,6 +15,7 @@ $arrMapping = [
     'customer id' => 'vendor_number',
     'cust:' => 'vendor_number',
     'vendor#' => 'vendor_number',
+    'vendor#:' => 'vendor_number',
     'vendor number' => 'vendor_number',
     'vendor no' => 'vendor_number',
     'vendor id' => 'vendor_number',

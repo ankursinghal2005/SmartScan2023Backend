@@ -336,7 +336,7 @@ try {
     $lineItemDetails = $objSmartScan->getLineItemDetails($result);
     
     if(empty($expenseRecord['VENDOR']) || empty($lineItemDetails)){
-        $msg = "Please use valid Invoice Form !!";
+        $msg = "The submitted document is not a valid invoice for the form you are attempting to complete!!";
         $arrRes = ['status' => 'fail', 'data' => [], 'msg' => $msg];
         echo json_encode($arrRes);
         exit();
